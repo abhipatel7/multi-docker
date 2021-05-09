@@ -1,0 +1,25 @@
+language: generic
+
+sudo: required
+
+services:
+  - docker
+
+before_install:
+  - docker build -t abhipatel7/multi-docker -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run -e CI=true abhipatel7/multi-docker npm test
+
+after_success:
+  - docker build -t abhipatel7/multi-docker-client ./client
+  - docker build -t abhipatel7/multi-docker-nginx ./nginx
+  - docker build -t abhipatel7/multi-docker-server ./server
+  - docker build -t abhipatel7/multi-docker-worker ./worker
+  # Login to the Docker CLI
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  # Push to Docker Hub
+  - docker push abhipatel7/multi-docker-client
+  - docker push abhipatel7/multi-docker-nginx
+  - docker push abhipatel7/multi-docker-server
+  - docker push abhipatel7/multi-docker-worker
